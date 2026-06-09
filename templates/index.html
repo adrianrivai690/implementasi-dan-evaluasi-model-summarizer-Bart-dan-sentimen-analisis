@@ -1,50 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Text Summarizer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NLP Document Intelligence Dashboard - Summarize, translate, and analyze text documents using BART Transformer AI">
+    <title>NLP Document Intelligence</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icons.png') }}">
 </head>
 <body>
-    <header>
-        <h1 style="font-family: Arial;">WELCOME TO TEXT SUMMARIZER</h1>
-    </header>
-    <section class="hero">
-        <!-- <form method="POST" action="/analyze" enctype="multipart/form-data">
-            <textarea name="text" rows="13" cols="50" placeholder="Enter your text here..."></textarea><br>
-            <input type="file" name="pdf_file" accept=".pdf" id="files">
-            <br><br>
-            <select name="action">
-                <option value="summarize">Summarize Text</option>
-                <option value="sentiment">Sentiment Analysis</option>
-                <option value="wordcloud">Word Cloud</option>
-            </select>
-            <input type="submit" value="Perform Action">
-        </form> -->
-        <form method="POST" action="/analyze" enctype="multipart/form-data">
-            <textarea name="text" rows="13" cols="50" placeholder="Enter your text here..."></textarea><br>
-            <div class="box">
-                <input type="file" name="pdf_file" accept=".pdf" id="files">
-                <button type="button" onclick="removeFile()">Remove</button>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Memproses Pipeline NLP...</div>
+        <div class="loading-subtext" id="loadingStatus">Menginisialisasi BART model</div>
+    </div>
+
+    <div class="page-wrapper">
+        <!-- Header -->
+        <header class="site-header">
+            <div class="logo">
+                <div class="logo-icon">N</div>
+                <span class="logo-text">NLP Document Intelligence</span>
             </div>
-            <br>
-            <select name="action">
-                <option value="summarize">Summarize Text</option>
-                <option value="sentiment">Sentiment Analysis</option>
-                <option value="wordcloud">Word Cloud</option>
-            </select>
-            <input type="submit" value="Perform Action">
-        </form>
-    </section>
-    <footer>
-        <p>&copy; Hari Hara Sudan 2023 Text Summarizer</p>
-    </footer>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Hero -->
+            <div class="hero-section animate-in">
+                <h1 class="hero-title">Document Intelligence</h1>
+                <p class="hero-subtitle">Analisis dokumen secara otomatis menggunakan BART Transformer & NLP Pipeline</p>
+                <span class="hero-badge">Powered by facebook/bart-large-cnn</span>
+            </div>
+
+            <!-- Upload Form -->
+            <form method="POST" action="/analyze_csv" enctype="multipart/form-data" class="upload-form animate-in delay-2" id="analyzeForm">
+                <div class="form-card">
+                    <div class="form-label">
+                        <span class="step-num">1</span>
+                        <h3>Upload Dataset</h3>
+                    </div>
+                    <p class="form-hint">Masukkan file <strong>test.csv</strong> dari dataset CNN/DailyMail (Kaggle).</p>
+                    <div class="file-input-wrapper">
+                        <input type="file" name="csv_file" accept=".csv" id="files" required>
+                        <button type="button" class="btn-remove" onclick="removeFile()">Remove</button>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <div class="form-label">
+                        <span class="step-num">2</span>
+                        <h3>Pilih Artikel (Row Index)</h3>
+                    </div>
+                    <p class="form-hint">Pilih baris ke-berapa yang ingin dianalisis oleh AI (contoh: 0, 1, 2, dst).</p>
+                    <input type="number" name="row_index" id="row_index" value="0" min="0" class="number-input">
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    Run Complete NLP Pipeline
+                </button>
+            </form>
+
+            <!-- Pipeline Features -->
+            <div class="pipeline-features animate-in delay-3">
+                <div class="feature-chip">
+                    <div class="chip-icon cyan">&#x2696;</div>
+                    <span>Abstractive Summarization</span>
+                </div>
+                <div class="feature-chip">
+                    <div class="chip-icon purple">&#x1F310;</div>
+                    <span>Machine Translation</span>
+                </div>
+                <div class="feature-chip">
+                    <div class="chip-icon green">&#x2714;</div>
+                    <span>Model Validation</span>
+                </div>
+                <div class="feature-chip">
+                    <div class="chip-icon pink">&#x2601;</div>
+                    <span>Word Cloud Viz</span>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="site-footer">
+            <p>&copy; 2026 Adriean Baihaqi Rivai - Universitas Mercu Buana (Midterm Project)</p>
+        </footer>
+    </div>
+
     <script>
-        // Function to remove the selected file
         function removeFile() {
-            var fileInput = document.getElementById("files");
-            fileInput.value = "";  // Clear the file input value
+            document.getElementById("files").value = "";
         }
+
+        // Loading overlay with rotating status messages
+        const statusMessages = [
+            "Membaca dataset CSV...",
+            "Menjalankan BART Summarization...",
+            "Menerjemahkan ke Bahasa Indonesia...",
+            "Menganalisis sentimen dokumen...",
+            "Memvalidasi akurasi model...",
+            "Membuat Word Cloud...",
+            "Menyiapkan hasil analisis..."
+        ];
+
+        document.getElementById("analyzeForm").addEventListener("submit", function() {
+            const overlay = document.getElementById("loadingOverlay");
+            const statusEl = document.getElementById("loadingStatus");
+            overlay.classList.add("active");
+
+            let i = 0;
+            setInterval(function() {
+                statusEl.textContent = statusMessages[i % statusMessages.length];
+                i++;
+            }, 3000);
+        });
     </script>
 </body>
 </html>

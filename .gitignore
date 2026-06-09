@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+static/images/wordcloud_*.png
+uploads/
+.idea/
+.vscode/

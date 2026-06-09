@@ -1,20 +1,179 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Text Summarizer - Result</title>
-    <link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NLP Analysis Results - AI-powered text summarization, translation, sentiment analysis and word cloud visualization">
+    <title>Analysis Result - NLP Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icons.png') }}">
 </head>
-    <header>
-         <h1 style="font-family: Arial;">WELCOME TO TEXT SUMMARIZER</h1>
-    </header>
-    <body>
-        <div class="answer">
-        <h1>{{display}}</h1>
-        <p><b>{{ result }}</b></p>
+<body>
+    <div class="page-wrapper">
+        <!-- Header -->
+        <header class="site-header">
+            <div class="logo">
+                <div class="logo-icon">N</div>
+                <span class="logo-text">NLP Document Intelligence</span>
+            </div>
+        </header>
+
+        {% if display == "Error" %}
+        <!-- Error State -->
+        <main class="main-content">
+            <div class="glass-card error-card accent-red animate-in" style="max-width: 600px; width: 100%;">
+                <div class="error-icon">!</div>
+                <h2 style="color: var(--accent-red); margin-bottom: 8px;">Terjadi Kesalahan</h2>
+                <p style="color: var(--text-muted);">Pipeline NLP mengalami error saat memproses data.</p>
+                <div class="error-message">{{ result }}</div>
+            </div>
+            <a href="/" class="btn-back animate-in delay-1">Kembali ke Dashboard</a>
+        </main>
+        {% else %}
+
+        <!-- Results Header -->
+        <div class="results-header animate-in">
+            <h1>Hasil Analisis NLP</h1>
+            <p class="results-meta">
+                Model: <span>facebook/bart-large-cnn</span> &middot; Dataset: <span>CNN/DailyMail (Kaggle)</span>
+            </p>
+            {% if processing_time %}
+            <div class="time-badge">
+                &#x23F1; Diproses dalam {{ processing_time }}s
+            </div>
+            {% endif %}
         </div>
-        <footer>
-            <p>&copy; Hari Hara Sudan 2023 Text Summarizer</p>
+
+        <!-- Dashboard Cards -->
+        <div class="dashboard-container">
+
+            <!-- 1. Data Extraction -->
+            <div class="glass-card accent-cyan animate-in delay-1" id="card-extraction">
+                <div class="card-header">
+                    <div class="step-badge cyan">1</div>
+                    <h2>Ekstraksi Data (Dataset Kaggle)</h2>
+                </div>
+                <div class="card-text">
+                    <div class="label-tag human">Human-written Article</div>
+                    <p style="margin-bottom: 16px;"><em>"{{ article }}"</em></p>
+                    <div class="label-tag ai">Original Summary (Kaggle)</div>
+                    <p>{{ original_summary }}</p>
+                </div>
+            </div>
+
+            <!-- 2. AI Summarization -->
+            <div class="glass-card accent-purple animate-in delay-2" id="card-summary">
+                <div class="card-header">
+                    <div class="step-badge purple">2</div>
+                    <h2>Abstractive Summarization (AI Generated)</h2>
+                </div>
+                <div class="card-text">
+                    <p>{{ ai_summary }}</p>
+                </div>
+            </div>
+
+            <!-- 3. Model Validation -->
+            <div class="glass-card accent-red animate-in delay-3" id="card-accuracy">
+                <div class="card-header">
+                    <div class="step-badge red">3</div>
+                    <h2>Validasi Akurasi Model</h2>
+                </div>
+                <div class="accuracy-container">
+                    <div class="accuracy-gauge">
+                        <svg viewBox="0 0 100 100">
+                            <defs>
+                                <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color: #00d4ff;" />
+                                    <stop offset="50%" style="stop-color: #a855f7;" />
+                                    <stop offset="100%" style="stop-color: #ec4899;" />
+                                </linearGradient>
+                            </defs>
+                            <circle class="gauge-bg" cx="50" cy="50" r="40" />
+                            <circle class="gauge-fill" cx="50" cy="50" r="40" id="accuracyGauge" />
+                        </svg>
+                        <div class="gauge-value">{{ accuracy }}%</div>
+                    </div>
+                    <div class="accuracy-info">
+                        <div class="accuracy-label">Keyword Overlap dengan Dataset Asli</div>
+                        <p class="accuracy-description">
+                            Perbandingan keyword antara ringkasan AI dan ringkasan human-written dari Kaggle dataset. Semakin tinggi skor, semakin akurat model.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Machine Translation -->
+            <div class="glass-card accent-amber animate-in delay-4" id="card-translation">
+                <div class="card-header">
+                    <div class="step-badge amber">4</div>
+                    <h2>Machine Translation (Bahasa Indonesia)</h2>
+                </div>
+                <div class="card-text">
+                    <p>{{ translation }}</p>
+                </div>
+            </div>
+
+            <!-- 5. Sentiment Analysis -->
+            <div class="glass-card accent-green animate-in delay-5" id="card-sentiment">
+                <div class="card-header">
+                    <div class="step-badge green">5</div>
+                    <h2>Analisis Sentimen Dokumen</h2>
+                </div>
+                <div class="sentiment-display">
+                    {% if sentiment_label == "Positive" %}
+                    <div class="sentiment-badge positive">Positive</div>
+                    {% elif sentiment_label == "Negative" %}
+                    <div class="sentiment-badge negative">Negative</div>
+                    {% else %}
+                    <div class="sentiment-badge neutral">Neutral</div>
+                    {% endif %}
+                    <span class="sentiment-score">Compound Score: {{ sentiment_score }}</span>
+                </div>
+            </div>
+
+            <!-- 6. Word Cloud -->
+            <div class="glass-card accent-pink animate-in delay-6" id="card-wordcloud" style="text-align: center;">
+                <div class="card-header" style="justify-content: center;">
+                    <div class="step-badge pink">6</div>
+                    <h2>Visualisasi Frekuensi Kata (Word Cloud)</h2>
+                </div>
+                {% if image_url %}
+                    <img src="{{ url_for('static', filename=image_url) }}" alt="Word Cloud Visualization" class="wordcloud-image">
+                {% else %}
+                    <p style="color: var(--accent-red); padding: 20px;">Gagal menghasilkan Word Cloud.</p>
+                {% endif %}
+            </div>
+
+            <!-- Back Button -->
+            <div style="text-align: center;" class="animate-in delay-7">
+                <a href="/" class="btn-back">&#x2190; Uji Dokumen Lainnya</a>
+            </div>
+        </div>
+
+        {% endif %}
+
+        <!-- Footer -->
+        <footer class="site-footer">
+            <p>&copy; 2026 Adriean Baihaqi Rivai - Universitas Mercu Buana (Midterm Project)</p>
         </footer>
-    </body>
+    </div>
+
+    {% if accuracy %}
+    <script>
+        // Animate accuracy gauge on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const gauge = document.getElementById('accuracyGauge');
+            if (gauge) {
+                const accuracy = {{ accuracy }};
+                const circumference = 2 * Math.PI * 40; // r=40
+                const offset = circumference - (accuracy / 100) * circumference;
+                // Trigger animation after a brief delay
+                setTimeout(function() {
+                    gauge.style.strokeDashoffset = offset;
+                }, 400);
+            }
+        });
+    </script>
+    {% endif %}
+</body>
 </html>
